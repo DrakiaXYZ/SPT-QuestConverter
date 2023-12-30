@@ -83,9 +83,11 @@ namespace QuestConverter014
             // Everything in `props` was moved up a level
             if (jsonObject.ContainsKey("_props"))
             {
-                foreach (var prop in jsonObject["_props"].AsObject())
+                var propsObject = jsonObject["_props"].AsObject();
+                foreach (var prop in propsObject.ToList())
                 {
-                    jsonObject[prop.Key] = prop.Value.DeepClone();
+                    propsObject.Remove(prop.Key);
+                    jsonObject[prop.Key] = prop.Value;
                 }
                 jsonObject.Remove("_props");
             }
