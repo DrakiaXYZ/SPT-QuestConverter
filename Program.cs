@@ -36,6 +36,19 @@ namespace QuestConverter014
                     // Add missing `declinePlayerMessage` property
                     quest.Value["declinePlayerMessage"] = $"{quest.Key} declinePlayerMessage";
 
+                    // Looks like `questStatus` and `templateId` are no longer included
+                    quest.Value.AsObject().Remove("questStatus");
+                    quest.Value.AsObject().Remove("templateId");
+
+                    // Add `globalQuestCounterId` to all AvailableFor entries
+                    var conditionList = quest.Value["conditions"]["AvailableForFinish"].AsArray().ToList();
+                    conditionList.AddRange(quest.Value["conditions"]["AvailableForStart"].AsArray().ToList());
+                    foreach (var condition in conditionList)
+                    {
+                        condition["globalQuestCounterId"] = "";
+                    }
+
+                    // Note: We do this last because it handles sorting
                     // We need to handle nested properties, so use recursive functions to handle the object
                     HandleJsonObject(quest.Value.AsObject());
                 }
@@ -106,7 +119,7 @@ namespace QuestConverter014
             }
 
             // Order the object by key for consistency
-            var orderedObject = jsonObject.OrderBy(x => x.Key).ToList();
+            var orderedObject = jsonObject.OrderBy(x => x.Key, StringComparer.Ordinal).ToList();
             jsonObject.Clear();
             foreach (var item in orderedObject)
             {
